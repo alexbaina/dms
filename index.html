@@ -120,18 +120,11 @@
             display: block;
         }
 
-        /* Typography & Layout */
+        /* Typography */
         h3 {
             font-size: 1.25rem;
             font-weight: 600;
             letter-spacing: -0.01em;
-            margin-bottom: 8px;
-        }
-
-        p {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            line-height: 1.5;
         }
 
         /* Direct link fallback */
@@ -173,8 +166,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
     </svg>
 
-    <h3 id="msg">Connecting...</h3>
-    <p id="submsg">Transferring you to your destination safely.</p>
+    <h3 id="msg">Redirecting...</h3>
 
     <div class="fallback" id="fallback">
         If you are not redirected automatically, <a id="redirect-link" href="#">click here</a>.
@@ -186,7 +178,6 @@
     const srv_domain = "elevivo.info";
     const path = window.location.pathname;
     const msgEl = document.getElementById("msg");
-    const submsgEl = document.getElementById("submsg");
     const cardEl = document.getElementById("card");
     const fallbackEl = document.getElementById("fallback");
     const redirectLink = document.getElementById("redirect-link");
@@ -194,7 +185,6 @@
     function showError(text) {
         cardEl.classList.add("error");
         msgEl.innerText = text;
-        submsgEl.innerText = "Please check your link or contact the provider.";
     }
 
     if (!path || path === "/") {
