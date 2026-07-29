@@ -2,38 +2,227 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting...</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --primary: #6366f1;
+            --primary-bright: #818cf8;
+            --error: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient background glow */
+        .bg-glow {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Centered Card Container */
+        .card {
+            position: relative;
+            z-index: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 48px 40px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Ring Spinner Animation */
+        .spinner-container {
+            position: relative;
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 28px;
+        }
+
+        .spinner-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid transparent;
+        }
+
+        .spinner-ring:nth-child(1) {
+            border-top-color: var(--primary);
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+
+        .spinner-ring:nth-child(2) {
+            border-right-color: var(--primary-bright);
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite -0.4s;
+            opacity: 0.7;
+        }
+
+        .spinner-ring:nth-child(3) {
+            border-bottom-color: var(--text-muted);
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite -0.8s;
+            opacity: 0.3;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error visual state */
+        .card.error .spinner-container {
+            display: none;
+        }
+
+        .error-icon {
+            display: none;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            color: var(--error);
+        }
+
+        .card.error .error-icon {
+            display: block;
+        }
+
+        /* Typography & Layout */
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-bottom: 8px;
+        }
+
+        p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Direct link fallback */
+        .fallback {
+            margin-top: 24px;
+            font-size: 0.8125rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .fallback.show {
+            opacity: 1;
+        }
+
+        .fallback a {
+            color: var(--primary-bright);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .fallback a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
 
-<h3 id="msg">Loading...</h3>
+<div class="bg-glow"></div>
+
+<div class="card" id="card">
+    <div class="spinner-container">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+    </div>
+
+    <!-- Warning icon rendered on error -->
+    <svg class="error-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+    </svg>
+
+    <h3 id="msg">Connecting...</h3>
+    <p id="submsg">Transferring you to your destination safely.</p>
+
+    <div class="fallback" id="fallback">
+        If you are not redirected automatically, <a id="redirect-link" href="#">click here</a>.
+    </div>
+</div>
 
 <script>
 (function () {
-
     const srv_domain = "elevivo.info";
-
     const path = window.location.pathname;
+    const msgEl = document.getElementById("msg");
+    const submsgEl = document.getElementById("submsg");
+    const cardEl = document.getElementById("card");
+    const fallbackEl = document.getElementById("fallback");
+    const redirectLink = document.getElementById("redirect-link");
+
+    function showError(text) {
+        cardEl.classList.add("error");
+        msgEl.innerText = text;
+        submsgEl.innerText = "Please check your link or contact the provider.";
+    }
 
     if (!path || path === "/") {
-        document.body.innerText = "Missing parameter";
+        showError("Missing Parameter");
         return;
     }
 
     let tracking_param = path.replace(/^\/+/, "");
-
     const isValid = /^[a-zA-Z0-9-_\/]+$/.test(tracking_param);
 
     if (!isValid) {
-        document.body.innerText = "Invalid parameter";
+        showError("Invalid Parameter");
         return;
     }
 
-    // IMPORTANT: DO NOT encode slashes
+    // Target URL construction
     const targetUrl = "https://" + srv_domain + "/" + tracking_param;
 
-    window.location.replace(targetUrl);
+    // Populate fallback link
+    redirectLink.href = targetUrl;
 
+    // Show manual fallback link if redirect takes longer than 2.5s
+    setTimeout(function() {
+        fallbackEl.classList.add("show");
+    }, 2500);
+
+    // Execute redirection
+    window.location.replace(targetUrl);
 })();
 </script>
 
